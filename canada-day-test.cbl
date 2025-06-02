@@ -200,7 +200,7 @@
                DISPLAY '  Expected: Flag=' P-EXP-FLAG 
                        ' Observed=' P-EXP-OBS ' RC=' P-EXP-RC
                DISPLAY '  Actual:   Flag=' WS-CANADA-DAY-FLAG 
-                       ' Observed=' WS-OBSERVED-DATE ' RC=' WS-RETURN-CODE
+                       ' Obs=' WS-OBSERVED-DATE ' RC=' WS-RETURN-CODE
                IF WS-RETURN-CODE NOT = 00
                    DISPLAY '  Error: ' WS-ERROR-MESSAGE
                END-IF
