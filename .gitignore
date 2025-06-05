@@ -1,0 +1,5 @@
+# COBOL build artifacts
+*.o
+canada-day-test
+canada-day-comprehensive-test
+canada-day-check
