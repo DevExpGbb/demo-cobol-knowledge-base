@@ -24,17 +24,9 @@
        
        DATA DIVISION.
        WORKING-STORAGE SECTION.
-       
-      * Input/Output Parameters
-       01  WS-INPUT-PARAMETERS.
-           05  WS-INPUT-DATE               PIC 9(8).
-           05  WS-OBSERVANCE-FLAG          PIC X(1).
-       
-       01  WS-OUTPUT-PARAMETERS.
-           05  WS-CANADA-DAY-FLAG          PIC X(1).
-           05  WS-OBSERVED-DATE            PIC 9(8).
-           05  WS-RETURN-CODE              PIC 9(2).
-           05  WS-ERROR-MESSAGE            PIC X(50).
+
+      * Copy standard Canada Day data structures
+       COPY 'canada-day-copybook.cpy'.
        
       * Work fields for date processing
        01  WS-DATE-WORK-FIELDS.
@@ -44,44 +36,13 @@
            05  WS-JULY-FIRST               PIC 9(8).
            05  WS-DAY-OF-WEEK              PIC 9(1).
        
-      * Constants
-       01  WS-CONSTANTS.
-           05  WS-CANADA-DAY-MONTH         PIC 9(2) VALUE 07.
-           05  WS-CANADA-DAY-DAY           PIC 9(2) VALUE 01.
-           05  WS-CONFEDERATION-YEAR       PIC 9(4) VALUE 1867.
-           05  WS-MAX-YEAR                 PIC 9(4) VALUE 9999.
-           05  WS-SATURDAY                 PIC 9(1) VALUE 6.
-           05  WS-SUNDAY                   PIC 9(1) VALUE 0.
-       
-      * Return codes
-       01  WS-RETURN-CODES.
-           05  WS-RC-SUCCESS               PIC 9(2) VALUE 00.
-           05  WS-RC-INVALID-FORMAT        PIC 9(2) VALUE 01.
-           05  WS-RC-INVALID-YEAR          PIC 9(2) VALUE 02.
-           05  WS-RC-INVALID-MONTH         PIC 9(2) VALUE 03.
-           05  WS-RC-INVALID-DAY           PIC 9(2) VALUE 04.
-           05  WS-RC-FUTURE-DATE           PIC 9(2) VALUE 05.
-       
-      * Error messages
-       01  WS-ERROR-MESSAGES.
-           05  WS-MSG-INVALID-FORMAT       PIC X(50) 
-               VALUE 'Invalid date format - use YYYYMMDD'.
-           05  WS-MSG-INVALID-YEAR         PIC X(50)
-               VALUE 'Invalid year - must be 1867 or later'.
-           05  WS-MSG-INVALID-MONTH        PIC X(50)
-               VALUE 'Invalid month - must be 01-12'.
-           05  WS-MSG-INVALID-DAY          PIC X(50)
-               VALUE 'Invalid day for given month and year'.
-           05  WS-MSG-FUTURE-DATE          PIC X(50)
-               VALUE 'Date exceeds system maximum'.
-       
        LINKAGE SECTION.
        01  L-INPUT-DATE                    PIC 9(8).
        01  L-OBSERVANCE-FLAG               PIC X(1).
        01  L-CANADA-DAY-FLAG               PIC X(1).
        01  L-OBSERVED-DATE                 PIC 9(8).
        01  L-RETURN-CODE                   PIC 9(2).
-       01  L-ERROR-MESSAGE                 PIC X(50).
+       01  L-ERROR-MESSAGE                 PIC X(40).
        
        PROCEDURE DIVISION USING L-INPUT-DATE
                                L-OBSERVANCE-FLAG
@@ -96,7 +57,7 @@
        0000-MAIN-PROCESSING.
            PERFORM 1000-INITIALIZE-PROGRAM
            PERFORM 2000-VALIDATE-INPUT-DATE
-           IF WS-RETURN-CODE = WS-RC-SUCCESS
+           IF CDO-SUCCESS
                PERFORM 3000-CHECK-CANADA-DAY
                PERFORM 4000-CALCULATE-OBSERVED-DATE
            END-IF
@@ -107,18 +68,18 @@
       * INITIALIZE PROGRAM VARIABLES                                  *
       ******************************************************************
        1000-INITIALIZE-PROGRAM.
-           INITIALIZE WS-OUTPUT-PARAMETERS
-           MOVE L-INPUT-DATE TO WS-INPUT-DATE
-           MOVE L-OBSERVANCE-FLAG TO WS-OBSERVANCE-FLAG
-           MOVE WS-RC-SUCCESS TO WS-RETURN-CODE
-           MOVE SPACES TO WS-ERROR-MESSAGE.
+           INITIALIZE CANADA-DAY-OUTPUT
+           MOVE L-INPUT-DATE TO CDI-INPUT-DATE
+           MOVE L-OBSERVANCE-FLAG TO CDI-OBSERVANCE-FLAG
+           MOVE 00 TO CDO-RETURN-CODE
+           MOVE SPACES TO CDO-ERROR-MESSAGE.
        
       ******************************************************************
       * VALIDATE INPUT DATE FORMAT AND VALUES                        *
       ******************************************************************
        2000-VALIDATE-INPUT-DATE.
            PERFORM 2100-VALIDATE-DATE-FORMAT
-           IF WS-RETURN-CODE = WS-RC-SUCCESS
+           IF CDO-SUCCESS
                PERFORM 2200-EXTRACT-DATE-COMPONENTS
                PERFORM 2300-VALIDATE-DATE-COMPONENTS
            END-IF.
@@ -127,28 +88,28 @@
       * VALIDATE DATE IS NUMERIC                                     *
       ******************************************************************
        2100-VALIDATE-DATE-FORMAT.
-           IF WS-INPUT-DATE IS NOT NUMERIC
-               MOVE WS-RC-INVALID-FORMAT TO WS-RETURN-CODE
-               MOVE WS-MSG-INVALID-FORMAT TO WS-ERROR-MESSAGE
+           IF CDI-INPUT-DATE IS NOT NUMERIC
+               MOVE 01 TO CDO-RETURN-CODE
+               MOVE CDE-INVALID-FORMAT TO CDO-ERROR-MESSAGE
            END-IF.
        
       ******************************************************************
       * EXTRACT YEAR, MONTH, DAY FROM INPUT DATE                     *
       ******************************************************************
        2200-EXTRACT-DATE-COMPONENTS.
-           MOVE WS-INPUT-DATE(1:4) TO WS-INPUT-YEAR
-           MOVE WS-INPUT-DATE(5:2) TO WS-INPUT-MONTH
-           MOVE WS-INPUT-DATE(7:2) TO WS-INPUT-DAY.
+           MOVE CDI-INPUT-DATE(1:4) TO WS-INPUT-YEAR
+           MOVE CDI-INPUT-DATE(5:2) TO WS-INPUT-MONTH
+           MOVE CDI-INPUT-DATE(7:2) TO WS-INPUT-DAY.
        
       ******************************************************************
       * VALIDATE DATE COMPONENT VALUES                               *
       ******************************************************************
        2300-VALIDATE-DATE-COMPONENTS.
            PERFORM 2310-VALIDATE-YEAR
-           IF WS-RETURN-CODE = WS-RC-SUCCESS
+           IF CDO-SUCCESS
                PERFORM 2320-VALIDATE-MONTH
            END-IF
-           IF WS-RETURN-CODE = WS-RC-SUCCESS
+           IF CDO-SUCCESS
                PERFORM 2330-VALIDATE-DAY
            END-IF.
        
@@ -156,13 +117,13 @@
       * VALIDATE YEAR IS IN ACCEPTABLE RANGE                         *
       ******************************************************************
        2310-VALIDATE-YEAR.
-           IF WS-INPUT-YEAR < WS-CONFEDERATION-YEAR
-               MOVE WS-RC-INVALID-YEAR TO WS-RETURN-CODE
-               MOVE WS-MSG-INVALID-YEAR TO WS-ERROR-MESSAGE
+           IF WS-INPUT-YEAR < CDC-CONFEDERATION-YEAR
+               MOVE 02 TO CDO-RETURN-CODE
+               MOVE CDE-INVALID-YEAR TO CDO-ERROR-MESSAGE
            ELSE
-               IF WS-INPUT-YEAR > WS-MAX-YEAR
-                   MOVE WS-RC-FUTURE-DATE TO WS-RETURN-CODE
-                   MOVE WS-MSG-FUTURE-DATE TO WS-ERROR-MESSAGE
+               IF WS-INPUT-YEAR > 9999
+                   MOVE 05 TO CDO-RETURN-CODE
+                   MOVE CDE-FUTURE-DATE TO CDO-ERROR-MESSAGE
                END-IF
            END-IF.
        
@@ -171,8 +132,8 @@
       ******************************************************************
        2320-VALIDATE-MONTH.
            IF WS-INPUT-MONTH < 1 OR WS-INPUT-MONTH > 12
-               MOVE WS-RC-INVALID-MONTH TO WS-RETURN-CODE
-               MOVE WS-MSG-INVALID-MONTH TO WS-ERROR-MESSAGE
+               MOVE 03 TO CDO-RETURN-CODE  
+               MOVE CDE-INVALID-MONTH TO CDO-ERROR-MESSAGE
            END-IF.
        
       ******************************************************************
@@ -198,8 +159,8 @@
       * SET INVALID DAY ERROR                                        *
       ******************************************************************
        2340-SET-INVALID-DAY-ERROR.
-           MOVE WS-RC-INVALID-DAY TO WS-RETURN-CODE
-           MOVE WS-MSG-INVALID-DAY TO WS-ERROR-MESSAGE.
+           MOVE 04 TO CDO-RETURN-CODE
+           MOVE CDE-INVALID-DAY TO CDO-ERROR-MESSAGE.
        
       ******************************************************************
       * VALIDATE FEBRUARY DAY (HANDLE LEAP YEARS)                    *
@@ -210,7 +171,7 @@
            ELSE
                IF WS-INPUT-DAY = 29
                    PERFORM 2360-CHECK-LEAP-YEAR
-                   IF WS-RETURN-CODE NOT = WS-RC-SUCCESS
+                   IF NOT CDO-SUCCESS
                        PERFORM 2340-SET-INVALID-DAY-ERROR
                    END-IF
                END-IF
@@ -225,34 +186,34 @@
                    IF FUNCTION MOD(WS-INPUT-YEAR, 400) = 0
                        CONTINUE
                    ELSE
-                       MOVE WS-RC-INVALID-DAY TO WS-RETURN-CODE
+                       MOVE 04 TO CDO-RETURN-CODE
                    END-IF
                END-IF
            ELSE
-               MOVE WS-RC-INVALID-DAY TO WS-RETURN-CODE
+               MOVE 04 TO CDO-RETURN-CODE
            END-IF.
        
       ******************************************************************
       * CHECK IF INPUT DATE IS CANADA DAY                            *
       ******************************************************************
        3000-CHECK-CANADA-DAY.
-           IF WS-INPUT-MONTH = WS-CANADA-DAY-MONTH AND
-              WS-INPUT-DAY = WS-CANADA-DAY-DAY
-               MOVE 'Y' TO WS-CANADA-DAY-FLAG
+           IF WS-INPUT-MONTH = CDC-CANADA-DAY-MONTH AND
+              WS-INPUT-DAY = CDC-CANADA-DAY-DAY
+               MOVE 'Y' TO CDO-CANADA-DAY-FLAG
            ELSE
-               MOVE 'N' TO WS-CANADA-DAY-FLAG
+               MOVE 'N' TO CDO-CANADA-DAY-FLAG
            END-IF.
        
       ******************************************************************
       * CALCULATE OBSERVED HOLIDAY DATE                               *
       ******************************************************************
        4000-CALCULATE-OBSERVED-DATE.
-           IF WS-CANADA-DAY-FLAG = 'Y' AND WS-OBSERVANCE-FLAG = 'Y'
+           IF CDO-IS-CANADA-DAY AND CDI-CHECK-OBSERVED
                PERFORM 4100-BUILD-JULY-FIRST-DATE
                PERFORM 4200-GET-DAY-OF-WEEK
                PERFORM 4300-CALCULATE-OBSERVED-DATE-LOGIC
            ELSE
-               MOVE WS-INPUT-DATE TO WS-OBSERVED-DATE
+               MOVE CDI-INPUT-DATE TO CDO-OBSERVED-DATE
            END-IF.
        
       ******************************************************************
@@ -260,8 +221,8 @@
       ******************************************************************
        4100-BUILD-JULY-FIRST-DATE.
            STRING WS-INPUT-YEAR
-                  WS-CANADA-DAY-MONTH
-                  WS-CANADA-DAY-DAY
+                  CDC-CANADA-DAY-MONTH
+                  CDC-CANADA-DAY-DAY
                   DELIMITED BY SIZE
                   INTO WS-JULY-FIRST.
        
@@ -277,22 +238,22 @@
       ******************************************************************
        4300-CALCULATE-OBSERVED-DATE-LOGIC.
            EVALUATE WS-DAY-OF-WEEK
-               WHEN WS-SATURDAY
+               WHEN CDC-SATURDAY
       *            If Saturday, observe on Friday (June 30)
                    PERFORM 4310-CALCULATE-PREVIOUS-DAY
-               WHEN WS-SUNDAY
+               WHEN CDC-SUNDAY
       *            If Sunday, observe on Monday (July 2)
                    PERFORM 4320-CALCULATE-NEXT-DAY
                WHEN OTHER
       *            Weekday - observe on actual date
-                   MOVE WS-JULY-FIRST TO WS-OBSERVED-DATE
+                   MOVE WS-JULY-FIRST TO CDO-OBSERVED-DATE
            END-EVALUATE.
        
       ******************************************************************
       * CALCULATE PREVIOUS DAY (JUNE 30)                             *
       ******************************************************************
        4310-CALCULATE-PREVIOUS-DAY.
-           COMPUTE WS-OBSERVED-DATE = 
+           COMPUTE CDO-OBSERVED-DATE = 
                FUNCTION DATE-OF-INTEGER(
                    FUNCTION INTEGER-OF-DATE(WS-JULY-FIRST) - 1).
        
@@ -300,7 +261,7 @@
       * CALCULATE NEXT DAY (JULY 2)                                  *
       ******************************************************************
        4320-CALCULATE-NEXT-DAY.
-           COMPUTE WS-OBSERVED-DATE = 
+           COMPUTE CDO-OBSERVED-DATE = 
                FUNCTION DATE-OF-INTEGER(
                    FUNCTION INTEGER-OF-DATE(WS-JULY-FIRST) + 1).
        
@@ -308,10 +269,10 @@
       * SET OUTPUT PARAMETERS                                        *
       ******************************************************************
        5000-SET-OUTPUT-PARAMETERS.
-           MOVE WS-CANADA-DAY-FLAG TO L-CANADA-DAY-FLAG
-           MOVE WS-OBSERVED-DATE TO L-OBSERVED-DATE
-           MOVE WS-RETURN-CODE TO L-RETURN-CODE
-           MOVE WS-ERROR-MESSAGE TO L-ERROR-MESSAGE.
+           MOVE CDO-CANADA-DAY-FLAG TO L-CANADA-DAY-FLAG
+           MOVE CDO-OBSERVED-DATE TO L-OBSERVED-DATE
+           MOVE CDO-RETURN-CODE TO L-RETURN-CODE
+           MOVE CDO-ERROR-MESSAGE TO L-ERROR-MESSAGE.
        
       ******************************************************************
       * PROGRAM EXIT                                                 *

@@ -32,7 +32,7 @@
                88  CDO-INVALID-MONTH       VALUE 03.
                88  CDO-INVALID-DAY         VALUE 04.
                88  CDO-FUTURE-DATE         VALUE 05.
-           05  CDO-ERROR-MESSAGE           PIC X(50).
+           05  CDO-ERROR-MESSAGE           PIC X(40).
        
       * Canada Day constants
        01  CANADA-DAY-CONSTANTS.
@@ -42,15 +42,28 @@
            05  CDC-SATURDAY                PIC 9(1) VALUE 6.
            05  CDC-SUNDAY                  PIC 9(1) VALUE 0.
        
-      * Error message constants
+      * Error message constants - memory optimized table
        01  CANADA-DAY-ERROR-MESSAGES.
-           05  CDE-INVALID-FORMAT          PIC X(50)
+           05  CDE-ERROR-TABLE.
+               10  CDE-MSG-01              PIC X(40)
+                   VALUE 'Invalid date format - use YYYYMMDD'.
+               10  CDE-MSG-02              PIC X(40)
+                   VALUE 'Invalid year - must be 1867 or later'.
+               10  CDE-MSG-03              PIC X(40)
+                   VALUE 'Invalid month - must be 01-12'.
+               10  CDE-MSG-04              PIC X(40)
+                   VALUE 'Invalid day for given month and year'.
+               10  CDE-MSG-05              PIC X(40)
+                   VALUE 'Date exceeds system maximum'.
+           05  CDE-ERROR-ARRAY REDEFINES CDE-ERROR-TABLE.
+               10  CDE-ERROR-MSG           PIC X(40) OCCURS 5 TIMES.
+           05  CDE-INVALID-FORMAT          PIC X(40) 
                VALUE 'Invalid date format - use YYYYMMDD'.
-           05  CDE-INVALID-YEAR            PIC X(50)
+           05  CDE-INVALID-YEAR            PIC X(40)
                VALUE 'Invalid year - must be 1867 or later'.
-           05  CDE-INVALID-MONTH           PIC X(50)
+           05  CDE-INVALID-MONTH           PIC X(40)
                VALUE 'Invalid month - must be 01-12'.
-           05  CDE-INVALID-DAY             PIC X(50)
+           05  CDE-INVALID-DAY             PIC X(40)
                VALUE 'Invalid day for given month and year'.
-           05  CDE-FUTURE-DATE             PIC X(50)
+           05  CDE-FUTURE-DATE             PIC X(40)
                VALUE 'Date exceeds system maximum'.

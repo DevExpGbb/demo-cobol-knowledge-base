@@ -27,59 +27,76 @@
        01  WS-PASS-COUNTER                 PIC 9(3) VALUE 0.
        01  WS-FAIL-COUNTER                 PIC 9(3) VALUE 0.
        
-      * Test case data
-       01  WS-TEST-CASES.
-           05  WS-TEST-CASE-1.
-               10  WS-TC1-DESC             PIC X(40) 
+      * Test case data - memory optimized with reusable structure
+       01  WS-CURRENT-TEST-CASE.
+           05  WS-TC-DESC                  PIC X(40).
+           05  WS-TC-INPUT-DATE            PIC 9(8).
+           05  WS-TC-OBSERVANCE            PIC X(1).
+           05  WS-TC-EXP-FLAG              PIC X(1).
+           05  WS-TC-EXP-OBSERVED          PIC 9(8).
+           05  WS-TC-EXP-RC                PIC 9(2).
+
+      * Test data table - reduces memory footprint
+       01  WS-TEST-DATA-TABLE.
+           05  WS-TD-CASE-01.
+               10  FILLER                  PIC X(40) 
                    VALUE 'Canada Day 2024 - Monday'.
-               10  WS-TC1-INPUT-DATE       PIC 9(8) VALUE 20240701.
-               10  WS-TC1-OBSERVANCE       PIC X(1) VALUE 'Y'.
-               10  WS-TC1-EXP-FLAG         PIC X(1) VALUE 'Y'.
-               10  WS-TC1-EXP-OBSERVED     PIC 9(8) VALUE 20240701.
-               10  WS-TC1-EXP-RC           PIC 9(2) VALUE 00.
-           
-           05  WS-TEST-CASE-2.
-               10  WS-TC2-DESC             PIC X(40)
+               10  FILLER                  PIC 9(8) VALUE 20240701.
+               10  FILLER                  PIC X(1) VALUE 'Y'.
+               10  FILLER                  PIC X(1) VALUE 'Y'.
+               10  FILLER                  PIC 9(8) VALUE 20240701.
+               10  FILLER                  PIC 9(2) VALUE 00.
+           05  WS-TD-CASE-02.
+               10  FILLER                  PIC X(40)
                    VALUE 'Canada Day 2023 - Saturday'.
-               10  WS-TC2-INPUT-DATE       PIC 9(8) VALUE 20230701.
-               10  WS-TC2-OBSERVANCE       PIC X(1) VALUE 'Y'.
-               10  WS-TC2-EXP-FLAG         PIC X(1) VALUE 'Y'.
-               10  WS-TC2-EXP-OBSERVED     PIC 9(8) VALUE 20230630.
-               10  WS-TC2-EXP-RC           PIC 9(2) VALUE 00.
-           
-           05  WS-TEST-CASE-3.
-               10  WS-TC3-DESC             PIC X(40)
+               10  FILLER                  PIC 9(8) VALUE 20230701.
+               10  FILLER                  PIC X(1) VALUE 'Y'.
+               10  FILLER                  PIC X(1) VALUE 'Y'.
+               10  FILLER                  PIC 9(8) VALUE 20230630.
+               10  FILLER                  PIC 9(2) VALUE 00.
+           05  WS-TD-CASE-03.
+               10  FILLER                  PIC X(40)
                    VALUE 'Canada Day 2029 - Sunday'.
-               10  WS-TC3-INPUT-DATE       PIC 9(8) VALUE 20290701.
-               10  WS-TC3-OBSERVANCE       PIC X(1) VALUE 'Y'.
-               10  WS-TC3-EXP-FLAG         PIC X(1) VALUE 'Y'.
-               10  WS-TC3-EXP-OBSERVED     PIC 9(8) VALUE 20290702.
-               10  WS-TC3-EXP-RC           PIC 9(2) VALUE 00.
-           
-           05  WS-TEST-CASE-4.
-               10  WS-TC4-DESC             PIC X(40)
+               10  FILLER                  PIC 9(8) VALUE 20290701.
+               10  FILLER                  PIC X(1) VALUE 'Y'.
+               10  FILLER                  PIC X(1) VALUE 'Y'.
+               10  FILLER                  PIC 9(8) VALUE 20290702.
+               10  FILLER                  PIC 9(2) VALUE 00.
+           05  WS-TD-CASE-04.
+               10  FILLER                  PIC X(40)
                    VALUE 'Not Canada Day - July 4th'.
-               10  WS-TC4-INPUT-DATE       PIC 9(8) VALUE 20240704.
-               10  WS-TC4-OBSERVANCE       PIC X(1) VALUE 'Y'.
-               10  WS-TC4-EXP-FLAG         PIC X(1) VALUE 'N'.
-               10  WS-TC4-EXP-OBSERVED     PIC 9(8) VALUE 20240704.
-               10  WS-TC4-EXP-RC           PIC 9(2) VALUE 00.
-           
-           05  WS-TEST-CASE-5.
-               10  WS-TC5-DESC             PIC X(40)
+               10  FILLER                  PIC 9(8) VALUE 20240704.
+               10  FILLER                  PIC X(1) VALUE 'Y'.
+               10  FILLER                  PIC X(1) VALUE 'N'.
+               10  FILLER                  PIC 9(8) VALUE 20240704.
+               10  FILLER                  PIC 9(2) VALUE 00.
+           05  WS-TD-CASE-05.
+               10  FILLER                  PIC X(40)
                    VALUE 'Invalid year - before Confederation'.
-               10  WS-TC5-INPUT-DATE       PIC 9(8) VALUE 18660701.
-               10  WS-TC5-OBSERVANCE       PIC X(1) VALUE 'Y'.
-               10  WS-TC5-EXP-FLAG         PIC X(1) VALUE 'N'.
-               10  WS-TC5-EXP-OBSERVED     PIC 9(8) VALUE 00000000.
-               10  WS-TC5-EXP-RC           PIC 9(2) VALUE 02.
+               10  FILLER                  PIC 9(8) VALUE 18660701.
+               10  FILLER                  PIC X(1) VALUE 'Y'.
+               10  FILLER                  PIC X(1) VALUE 'N'.
+               10  FILLER                  PIC 9(8) VALUE 00000000.
+               10  FILLER                  PIC 9(2) VALUE 02.
+
+       01  WS-TEST-CASE-ARRAY REDEFINES WS-TEST-DATA-TABLE.
+           05  WS-TEST-CASE                OCCURS 5 TIMES.
+               10  WS-TCA-DESC             PIC X(40).
+               10  WS-TCA-INPUT-DATE       PIC 9(8).
+               10  WS-TCA-OBSERVANCE       PIC X(1).
+               10  WS-TCA-EXP-FLAG         PIC X(1).
+               10  WS-TCA-EXP-OBSERVED     PIC 9(8).
+               10  WS-TCA-EXP-RC           PIC 9(2).
        
-      * Output from called program
+      * Output from called program - reduced size
        01  WS-OUTPUT-PARAMS.
            05  WS-CANADA-DAY-FLAG          PIC X(1).
            05  WS-OBSERVED-DATE            PIC 9(8).
            05  WS-RETURN-CODE              PIC 9(2).
-           05  WS-ERROR-MESSAGE            PIC X(50).
+           05  WS-ERROR-MESSAGE            PIC X(40).
+
+      * Loop control
+       01  WS-TEST-INDEX                   PIC 9(1).
        
       * Display formatting
        01  WS-DISPLAY-LINE                 PIC X(80).
@@ -94,113 +111,49 @@
            DISPLAY '======================================='
            DISPLAY ' '
            
-           PERFORM 1000-RUN-TEST-CASE-1
-           PERFORM 1000-RUN-TEST-CASE-2  
-           PERFORM 1000-RUN-TEST-CASE-3
-           PERFORM 1000-RUN-TEST-CASE-4
-           PERFORM 1000-RUN-TEST-CASE-5
+           PERFORM VARYING WS-TEST-INDEX FROM 1 BY 1
+                   UNTIL WS-TEST-INDEX > 5
+               PERFORM 1000-RUN-SINGLE-TEST-CASE
+           END-PERFORM
            
            PERFORM 9000-DISPLAY-TEST-SUMMARY
            STOP RUN.
        
       ******************************************************************
-      * RUN TEST CASE 1                                              *
+      * RUN SINGLE TEST CASE USING ARRAY INDEX                      *
       ******************************************************************
-       1000-RUN-TEST-CASE-1.
-           CALL 'CANADA-DAY-CHECK' USING WS-TC1-INPUT-DATE
-                                         WS-TC1-OBSERVANCE
+       1000-RUN-SINGLE-TEST-CASE.
+           MOVE WS-TEST-CASE(WS-TEST-INDEX) TO WS-CURRENT-TEST-CASE
+           
+           CALL 'CANADA-DAY-CHECK' USING WS-TC-INPUT-DATE
+                                         WS-TC-OBSERVANCE
                                          WS-CANADA-DAY-FLAG
                                          WS-OBSERVED-DATE
                                          WS-RETURN-CODE
                                          WS-ERROR-MESSAGE
            
-           PERFORM 2000-VALIDATE-RESULTS USING WS-TC1-DESC
-                                               WS-TC1-EXP-FLAG
-                                               WS-TC1-EXP-OBSERVED
-                                               WS-TC1-EXP-RC.
-       
-      ******************************************************************
-      * RUN TEST CASE 2                                              *
-      ******************************************************************
-       1000-RUN-TEST-CASE-2.
-           CALL 'CANADA-DAY-CHECK' USING WS-TC2-INPUT-DATE
-                                         WS-TC2-OBSERVANCE
-                                         WS-CANADA-DAY-FLAG
-                                         WS-OBSERVED-DATE
-                                         WS-RETURN-CODE
-                                         WS-ERROR-MESSAGE
-           
-           PERFORM 2000-VALIDATE-RESULTS USING WS-TC2-DESC
-                                               WS-TC2-EXP-FLAG
-                                               WS-TC2-EXP-OBSERVED
-                                               WS-TC2-EXP-RC.
-       
-      ******************************************************************
-      * RUN TEST CASE 3                                              *
-      ******************************************************************
-       1000-RUN-TEST-CASE-3.
-           CALL 'CANADA-DAY-CHECK' USING WS-TC3-INPUT-DATE
-                                         WS-TC3-OBSERVANCE
-                                         WS-CANADA-DAY-FLAG
-                                         WS-OBSERVED-DATE
-                                         WS-RETURN-CODE
-                                         WS-ERROR-MESSAGE
-           
-           PERFORM 2000-VALIDATE-RESULTS USING WS-TC3-DESC
-                                               WS-TC3-EXP-FLAG
-                                               WS-TC3-EXP-OBSERVED
-                                               WS-TC3-EXP-RC.
-       
-      ******************************************************************
-      * RUN TEST CASE 4                                              *
-      ******************************************************************
-       1000-RUN-TEST-CASE-4.
-           CALL 'CANADA-DAY-CHECK' USING WS-TC4-INPUT-DATE
-                                         WS-TC4-OBSERVANCE
-                                         WS-CANADA-DAY-FLAG
-                                         WS-OBSERVED-DATE
-                                         WS-RETURN-CODE
-                                         WS-ERROR-MESSAGE
-           
-           PERFORM 2000-VALIDATE-RESULTS USING WS-TC4-DESC
-                                               WS-TC4-EXP-FLAG
-                                               WS-TC4-EXP-OBSERVED
-                                               WS-TC4-EXP-RC.
-       
-      ******************************************************************
-      * RUN TEST CASE 5                                              *
-      ******************************************************************
-       1000-RUN-TEST-CASE-5.
-           CALL 'CANADA-DAY-CHECK' USING WS-TC5-INPUT-DATE
-                                         WS-TC5-OBSERVANCE
-                                         WS-CANADA-DAY-FLAG
-                                         WS-OBSERVED-DATE
-                                         WS-RETURN-CODE
-                                         WS-ERROR-MESSAGE
-           
-           PERFORM 2000-VALIDATE-RESULTS USING WS-TC5-DESC
-                                               WS-TC5-EXP-FLAG
-                                               WS-TC5-EXP-OBSERVED
-                                               WS-TC5-EXP-RC.
+           PERFORM 2000-VALIDATE-RESULTS.
        
       ******************************************************************
       * VALIDATE TEST RESULTS                                        *
       ******************************************************************
-       2000-VALIDATE-RESULTS USING P-DESC P-EXP-FLAG P-EXP-OBS P-EXP-RC.
+       2000-VALIDATE-RESULTS.
            ADD 1 TO WS-TEST-COUNTER
            
-           IF WS-CANADA-DAY-FLAG = P-EXP-FLAG AND
-              WS-OBSERVED-DATE = P-EXP-OBS AND
-              WS-RETURN-CODE = P-EXP-RC
+           IF WS-CANADA-DAY-FLAG = WS-TC-EXP-FLAG AND
+              WS-OBSERVED-DATE = WS-TC-EXP-OBSERVED AND
+              WS-RETURN-CODE = WS-TC-EXP-RC
                ADD 1 TO WS-PASS-COUNTER
-               DISPLAY 'Test ' WS-TEST-COUNTER ': PASS - ' P-DESC
+               DISPLAY 'Test ' WS-TEST-COUNTER ': PASS - ' WS-TC-DESC
            ELSE
                ADD 1 TO WS-FAIL-COUNTER
-               DISPLAY 'Test ' WS-TEST-COUNTER ': FAIL - ' P-DESC
-               DISPLAY '  Expected: Flag=' P-EXP-FLAG 
-                       ' Observed=' P-EXP-OBS ' RC=' P-EXP-RC
+               DISPLAY 'Test ' WS-TEST-COUNTER ': FAIL - ' WS-TC-DESC
+               DISPLAY '  Expected: Flag=' WS-TC-EXP-FLAG 
+                       ' Observed=' WS-TC-EXP-OBSERVED 
+                       ' RC=' WS-TC-EXP-RC
                DISPLAY '  Actual:   Flag=' WS-CANADA-DAY-FLAG 
-                       ' Obs=' WS-OBSERVED-DATE ' RC=' WS-RETURN-CODE
+                       ' Obs=' WS-OBSERVED-DATE 
+                       ' RC=' WS-RETURN-CODE
                IF WS-RETURN-CODE NOT = 00
                    DISPLAY '  Error: ' WS-ERROR-MESSAGE
                END-IF
